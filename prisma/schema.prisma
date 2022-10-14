@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Analysis {
+  id         Int         @id @default(autoincrement())
+  components Component[]
+}
+
+model Component {
+  id            Int        @id @default(autoincrement())
+  analysisId    Int
+  componentName String
+  analysis      Analysis   @relation(fields: [analysisId], references: [id])
+  instances     Instance[]
+}
+
+model Instance {
+  id          Int         @id @default(autoincrement())
+  componentId Int
+  component   Component   @relation(fields: [componentId], references: [id])
+  // knownProps  String[]
+  props       Prop[]
+  propsSpread Boolean
+  importInfo  ImportInfo?
+  location    Location?
+}
+
+model Prop {
+  id         Int      @id @default(autoincrement())
+  instanceId Int
+  instance   Instance @relation(fields: [instanceId], references: [id])
+
+  key          String
+  stringValue  String?  @db.Text
+  booleanValue Boolean?
+  intValue     Float?
+}
+
+model ImportInfo {
+  id         Int      @id @default(autoincrement())
+  instanceId Int      @unique
+  instance   Instance @relation(fields: [instanceId], references: [id])
+
+  imported   String
+  local      String
+  moduleName String
+  importType String
+}
+
+model Location {
+  id         Int      @id @default(autoincrement())
+  instanceId Int      @unique
+  instance   Instance @relation(fields: [instanceId], references: [id])
+
+  file   String
+  line   Int
+  column Int
+}
